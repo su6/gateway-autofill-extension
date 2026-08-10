@@ -9,7 +9,7 @@
   <body>
     <div id="toast" role="status" aria-live="polite"></div>
     <main>
-      <h1>网关 API 自动填写 <small>v0.3.18</small></h1>
+      <h1>网关 API 自动填写 <small>v0.3.19</small></h1>
       <p class="author">@bianlei5</p>
       <p id="environment" class="environment"></p>
       <details open>
@@ -17,6 +17,7 @@
         <p class="hint">首次选择后会按当前环境保存在本机；提交接口后再次打开会自动使用。</p>
         <label>业务分组 <select id="businessGroup"><option value="">正在读取网关业务分组…</option></select></label>
         <label>服务域 <select id="serviceDomain"><option value="">请先选择业务分组</option></select></label>
+        <label>服务类型 <select id="serviceType"><option value="">请先选择服务域</option></select></label>
         <label>敏感标签 <input id="sensitiveTag" type="text"></label>
         <button id="saveSettings" class="secondary" type="button">保存默认配置</button>
       </details>

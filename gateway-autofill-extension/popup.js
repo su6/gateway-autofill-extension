@@ -1,5 +1,5 @@
 const COMMON_DEFAULTS = {
-  serviceDomain: '', sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)'
+  serviceDomain: '', serviceType: 'JSF服务', sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)'
 };
 const ENVIRONMENT_DEFAULTS = {
   uat: { ...COMMON_DEFAULTS, businessGroup: '' },
@@ -14,6 +14,7 @@ const preview = document.querySelector('#preview');
 const environment = document.querySelector('#environment');
 const businessGroupInput = document.querySelector('#businessGroup');
 const serviceDomainInput = document.querySelector('#serviceDomain');
+const serviceTypeInput = document.querySelector('#serviceType');
 const TEMPLATE_TEXTS = {
   jsf: `JSF\n接口签名: com.jdl.crm.customer.api.service.factoring.CrmFactoringApplyApi#getEnums\n应用名称: crm-customer\nJSF别名: crm-uat\nJSF校验token: 1234\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5`,
   http: `HTTP\n应用名称: crm-customer\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5\n集群: crm-customer`
@@ -22,13 +23,9 @@ const configInputs = ['sensitiveTag']
   .reduce((all, id) => ({ ...all, [id]: document.querySelector(`#${id}`) }), {});
 let config = { ...ENVIRONMENT_DEFAULTS.uat };
 let environmentKey = 'uat';
-let dropdownOptions = { groups: [], domains: [] };
+let dropdownOptions = { groups: [], domains: [], types: [] };
 
-function serviceType() {
-  return /(?:^|\n)\s*(?:接口签名|JSF接口签名|JSF别名|JSF校验token)\s*[：:]/i.test(template.value)
-    ? 'JSF服务'
-    : 'HTTP服务';
-}
+function serviceType() { return serviceTypeInput.value; }
 function show(message, error = false) { status.textContent = message; status.className = error ? 'error' : ''; }
 function showToast(message) {
   const toast = document.querySelector('#toast');
@@ -63,9 +60,9 @@ async function getGatewayTab() {
   return tab;
 }
 
-async function readGatewayDropdowns(group) {
+async function readGatewayDropdowns(group, domain) {
   const tab = await getGatewayTab();
-  const result = await chrome.tabs.sendMessage(tab.id, { type: 'gateway-read-dropdown-options', group });
+  const result = await chrome.tabs.sendMessage(tab.id, { type: 'gateway-read-dropdown-options', group, domain });
   if (!result?.ok) throw new Error(result?.error || '未读取到网关下拉选项。');
   return result;
 }
@@ -75,6 +72,27 @@ function renderDomains(domains) {
   renderSelect(serviceDomainInput, dropdownOptions.domains, config.serviceDomain, '请选择服务域');
 }
 
+function renderServiceTypes(types) {
+  dropdownOptions.types = types || [];
+  renderSelect(serviceTypeInput, dropdownOptions.types, config.serviceType, '请选择服务类型');
+}
+
+async function loadServiceTypes(group, domain) {
+  try {
+    const result = await readGatewayDropdowns(group, domain);
+    dropdownOptions.groups = result.groups || dropdownOptions.groups;
+    renderSelect(businessGroupInput, dropdownOptions.groups, group, '请选择业务分组');
+    renderDomains(result.domains);
+    config.businessGroup = optionText(businessGroupInput);
+    config.serviceDomain = optionText(serviceDomainInput);
+    renderServiceTypes(result.types);
+    if (!serviceType()) show('请选择服务类型；服务类型由当前服务域联动加载。');
+  } catch (error) {
+    renderServiceTypes([]);
+    show(`服务类型读取失败：${error.message}`, true);
+  }
+}
+
 async function loadDomains(group) {
   try {
     const result = await readGatewayDropdowns(group);
@@ -82,8 +100,14 @@ async function loadDomains(group) {
     renderSelect(businessGroupInput, dropdownOptions.groups, group, '请选择业务分组');
     config.businessGroup = optionText(businessGroupInput);
     renderDomains(result.domains);
+    const domain = dropdownOptions.domains.some(item => item.text === config.serviceDomain)
+      ? config.serviceDomain
+      : result.selectedDomain || '';
+    if (domain) await loadServiceTypes(config.businessGroup, domain);
+    else renderServiceTypes([]);
   } catch (error) {
     renderDomains([]);
+    renderServiceTypes([]);
     show(`服务域读取失败：${error.message}`, true);
   }
 }
@@ -97,10 +121,11 @@ async function loadGatewayDropdowns() {
       : result.selectedGroup || '';
     renderSelect(businessGroupInput, dropdownOptions.groups, group, '请选择业务分组');
     if (group) await loadDomains(group);
-    else renderDomains([]);
+    else { renderDomains([]); renderServiceTypes([]); }
   } catch (error) {
     renderSelect(businessGroupInput, [], '', '请打开 API 新增页面后重试');
     renderDomains([]);
+    renderServiceTypes([]);
     show(`下拉选项读取失败：${error.message}`, true);
   }
 }
@@ -127,13 +152,15 @@ function parseTemplate(text) {
 function renderServiceMode() {
   pinRuleRow.hidden = serviceType() !== 'JSF服务';
   renderDomains(dropdownOptions.domains);
+  renderServiceTypes(dropdownOptions.types);
   renderPreview();
 }
 
 function renderPreview() {
-  const { data, errors } = parseTemplate(template.value);
   if (!template.value.trim()) { preview.textContent = '粘贴模板后会在此预览解析结果。'; preview.className = ''; return; }
-  const summary = `API：${data.apiName || '—'}；${serviceType()}；敏感标签：${data.sensitiveTag || config.sensitiveTag}${data.tps ? `；TPS：${data.tps}` : ''}${data.assetOwner ? `；负责人：${data.assetOwner}` : ''}${data.cluster ? `；集群：${data.cluster}` : ''}`;
+  if (!serviceType()) { preview.textContent = '请先选择服务类型；该列表由当前服务域联动加载。'; preview.className = 'error'; return; }
+  const { data, errors } = parseTemplate(template.value);
+  const summary = `API：${data.apiName || '—'}；${serviceType() || '未选择服务类型'}；敏感标签：${data.sensitiveTag || config.sensitiveTag}${data.tps ? `；TPS：${data.tps}` : ''}${data.assetOwner ? `；负责人：${data.assetOwner}` : ''}${data.cluster ? `；集群：${data.cluster}` : ''}`;
   preview.textContent = errors.length ? `${summary}。${errors.join(' ')}` : `${summary}。校验通过。`;
   preview.className = errors.length ? 'error' : 'ok';
 }
@@ -142,6 +169,7 @@ async function saveConfig() {
   Object.entries(configInputs).forEach(([key, input]) => { config[key] = input.value.trim(); });
   config.businessGroup = optionText(businessGroupInput);
   config.serviceDomain = optionText(serviceDomainInput);
+  config.serviceType = serviceType();
   const saved = await chrome.storage.local.get('gatewayAutofillConfigByEnvironment');
   const configurations = saved.gatewayAutofillConfigByEnvironment || {};
   configurations[environmentKey] = config;
@@ -176,20 +204,28 @@ async function initialise() {
     });
   }
   config = { ...ENVIRONMENT_DEFAULTS[environmentKey], ...(configurations[environmentKey] || {}) };
+  if (!config.serviceType) config.serviceType = config.profile === 'crm-http' ? 'HTTP服务' : 'JSF服务';
   environment.textContent = host === 'uat-gateway.jdl.com' ? '当前环境：预发网关' : host === 'gateway.jdl.com' ? '当前环境：线上网关' : '当前环境：请打开网关页面';
   Object.entries(configInputs).forEach(([key, input]) => { input.value = config[key]; });
+  serviceTypeInput.value = config.serviceType;
   renderServiceMode();
   await loadGatewayDropdowns();
 }
 
-template.addEventListener('input', renderServiceMode);
+template.addEventListener('input', renderPreview);
 businessGroupInput.addEventListener('change', () => {
   const group = optionText(businessGroupInput);
   config.businessGroup = group;
+  config.serviceDomain = '';
   loadDomains(group);
 });
 serviceDomainInput.addEventListener('change', () => {
   config.serviceDomain = optionText(serviceDomainInput);
+  loadServiceTypes(config.businessGroup, config.serviceDomain);
+});
+serviceTypeInput.addEventListener('change', () => {
+  config.serviceType = serviceType();
+  renderServiceMode();
 });
 document.querySelector('#saveSettings').addEventListener('click', saveConfig);
 document.querySelectorAll('[data-template]').forEach(button => button.addEventListener('click', async () => {
@@ -199,6 +235,8 @@ document.querySelectorAll('[data-template]').forEach(button => button.addEventLi
 }));
 
 button.addEventListener('click', async () => {
+  if (!serviceType()) return show('请先在默认配置中选择服务类型。', true);
+  if (!['JSF服务', 'HTTP服务'].includes(serviceType())) return show(`暂不支持自动填写“${serviceType()}”类型。`, true);
   const { errors } = parseTemplate(template.value);
   if (!template.value.trim()) return show('请先粘贴接口模板。', true);
   if (errors.length) return show(`请修正模板：${errors.join(' ')}`, true);

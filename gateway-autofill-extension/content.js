@@ -187,21 +187,37 @@
     return true;
   }
 
-  async function readGatewayDropdownOptions(groupText) {
+  async function waitForOptionsChange(control, previousOptions) {
+    const previous = JSON.stringify(previousOptions);
+    for (let attempt = 0; attempt < 30; attempt++) {
+      await wait(100);
+      const current = selectOptions(control);
+      if (current.length && JSON.stringify(current) !== previous) return current;
+    }
+    return selectOptions(control);
+  }
+
+  async function readGatewayDropdownOptions(groupText, domainText) {
     const groupControl = visibleSelect('#domain-api-edit-group');
     const domainControl = visibleSelect('#domain-api-edit-domain');
-    if (!groupControl || !domainControl) throw new Error('未找到 API 新增表单，请先点击“新建”。');
+    const typeControl = visibleSelect('#domain-api-edit-type');
+    if (!groupControl || !domainControl || !typeControl) throw new Error('未找到 API 新增表单，请先点击“新建”。');
     if (groupText && normalise(groupText) !== normalise(groupControl.selectedOptions[0]?.textContent)) {
+      const domainsBefore = selectOptions(domainControl);
       if (!selectByText(groupControl, groupText)) throw new Error(`未找到业务分组：${groupText}`);
-      for (let attempt = 0; attempt < 30; attempt++) {
-        await wait(100);
-        if (selectOptions(domainControl).length) break;
-      }
+      await waitForOptionsChange(domainControl, domainsBefore);
+    }
+    if (domainText && normalise(domainText) !== normalise(domainControl.selectedOptions[0]?.textContent)) {
+      const typesBefore = selectOptions(typeControl);
+      if (!selectByText(domainControl, domainText)) throw new Error(`未找到服务域：${domainText}`);
+      await waitForOptionsChange(typeControl, typesBefore);
     }
     return {
       groups: selectOptions(groupControl),
       domains: selectOptions(domainControl),
-      selectedGroup: groupControl.selectedOptions[0]?.textContent.trim() || ''
+      types: selectOptions(typeControl),
+      selectedGroup: groupControl.selectedOptions[0]?.textContent.trim() || '',
+      selectedDomain: domainControl.selectedOptions[0]?.textContent.trim() || ''
     };
   }
 
@@ -348,7 +364,7 @@
     if (message.type === 'gateway-read-dropdown-options') {
       (async () => {
         try {
-          respond({ ok: true, ...(await readGatewayDropdownOptions(message.group)) });
+          respond({ ok: true, ...(await readGatewayDropdownOptions(message.group, message.domain)) });
         } catch (error) {
           respond({ ok: false, error: error.message });
         }
@@ -358,7 +374,8 @@
     if (message.type !== 'gateway-autofill') return;
     (async () => {
       try {
-        const serviceType = message.serviceType === 'HTTP服务' ? 'HTTP服务' : 'JSF服务';
+        const serviceType = message.serviceType;
+        if (!['JSF服务', 'HTTP服务'].includes(serviceType)) throw new Error(`暂不支持自动填写“${serviceType || '未选择'}”类型。`);
         const data = parse(message.text, serviceType);
         const config = {
           businessGroup: '', serviceDomain: '', jsfDomain: '', httpDomain: '',
