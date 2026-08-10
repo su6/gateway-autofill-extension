@@ -167,6 +167,44 @@
 
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+  function selectOptions(control) {
+    if (!(control instanceof HTMLSelectElement)) return [];
+    return [...control.options]
+      .map(option => ({ text: option.textContent.trim(), value: option.value }))
+      .filter(option => option.text && option.value);
+  }
+
+  function visibleSelect(selector) {
+    return [...document.querySelectorAll(selector)].find(control => control instanceof HTMLSelectElement && visible(control));
+  }
+
+  function selectByText(control, text) {
+    if (!(control instanceof HTMLSelectElement)) return false;
+    const option = [...control.options].find(item => normalise(item.textContent) === normalise(text));
+    if (!option) return false;
+    control.value = option.value;
+    control.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+
+  async function readGatewayDropdownOptions(groupText) {
+    const groupControl = visibleSelect('#domain-api-edit-group');
+    const domainControl = visibleSelect('#domain-api-edit-domain');
+    if (!groupControl || !domainControl) throw new Error('未找到 API 新增表单，请先点击“新建”。');
+    if (groupText && normalise(groupText) !== normalise(groupControl.selectedOptions[0]?.textContent)) {
+      if (!selectByText(groupControl, groupText)) throw new Error(`未找到业务分组：${groupText}`);
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await wait(100);
+        if (selectOptions(domainControl).length) break;
+      }
+    }
+    return {
+      groups: selectOptions(groupControl),
+      domains: selectOptions(domainControl),
+      selectedGroup: groupControl.selectedOptions[0]?.textContent.trim() || ''
+    };
+  }
+
   async function selectDropdown(label, optionText) {
     const control = findControl(label);
     if (!control) return false;
@@ -307,13 +345,23 @@
   }
 
   chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+    if (message.type === 'gateway-read-dropdown-options') {
+      (async () => {
+        try {
+          respond({ ok: true, ...(await readGatewayDropdownOptions(message.group)) });
+        } catch (error) {
+          respond({ ok: false, error: error.message });
+        }
+      })();
+      return true;
+    }
     if (message.type !== 'gateway-autofill') return;
     (async () => {
       try {
         const serviceType = message.serviceType === 'HTTP服务' ? 'HTTP服务' : 'JSF服务';
         const data = parse(message.text, serviceType);
         const config = {
-          businessGroup: 'jdl_crm - 新CRM', jsfDomain: 'crm.jdl.com', httpDomain: 'crm-http.jdl.com',
+          businessGroup: '', jsfDomain: '', httpDomain: '',
           sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)', ...(message.config || {})
         };
         const fields = [

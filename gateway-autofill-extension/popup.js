@@ -1,10 +1,10 @@
 const COMMON_DEFAULTS = {
-  jsfDomain: 'crm.jdl.com', httpDomain: 'crm-http.jdl.com',
+  jsfDomain: '', httpDomain: '',
   sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)', profile: 'crm-jsf'
 };
 const ENVIRONMENT_DEFAULTS = {
-  uat: { ...COMMON_DEFAULTS, businessGroup: 'jdl_crm - jdl_crm' },
-  production: { ...COMMON_DEFAULTS, businessGroup: 'jdl_crm - 新CRM' }
+  uat: { ...COMMON_DEFAULTS, businessGroup: '' },
+  production: { ...COMMON_DEFAULTS, businessGroup: '' }
 };
 const template = document.querySelector('#template');
 const button = document.querySelector('#fill');
@@ -15,16 +15,20 @@ const pinRule = document.querySelector('#pinRule');
 const pinRuleRow = pinRule.closest('.rule');
 const preview = document.querySelector('#preview');
 const environment = document.querySelector('#environment');
+const businessGroupInput = document.querySelector('#businessGroup');
+const serviceDomainInput = document.querySelector('#serviceDomain');
 const TEMPLATE_TEXTS = {
   jsf: `JSF\n接口签名: com.jdl.crm.customer.api.service.factoring.CrmFactoringApplyApi#getEnums\n应用名称: crm-customer\nJSF别名: crm-uat\nJSF校验token: 1234\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5`,
   http: `HTTP\n应用名称: crm-customer\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5\n集群: crm-customer`
 };
-const configInputs = ['businessGroup', 'jsfDomain', 'httpDomain', 'sensitiveTag']
+const configInputs = ['sensitiveTag']
   .reduce((all, id) => ({ ...all, [id]: document.querySelector(`#${id}`) }), {});
 let config = { ...ENVIRONMENT_DEFAULTS.uat };
 let environmentKey = 'uat';
+let dropdownOptions = { groups: [], domains: [] };
 
 function serviceType() { return profile.value === 'crm-http' ? 'HTTP服务' : 'JSF服务'; }
+function domainConfigKey() { return serviceType() === 'HTTP服务' ? 'httpDomain' : 'jsfDomain'; }
 function show(message, error = false) { status.textContent = message; status.className = error ? 'error' : ''; }
 function showToast(message) {
   const toast = document.querySelector('#toast');
@@ -34,6 +38,72 @@ function showToast(message) {
   showToast.timer = setTimeout(() => toast.classList.remove('visible'), 2000);
 }
 function normalise(value) { return String(value || '').replace(/[\s：:]/g, '').toLowerCase(); }
+
+function optionText(input) {
+  return input.value ? input.selectedOptions[0]?.textContent.trim() || '' : '';
+}
+
+function renderSelect(input, options, selected, placeholder) {
+  input.replaceChildren(new Option(placeholder, ''));
+  const seen = new Set();
+  options.forEach(({ text }) => {
+    const value = String(text || '').trim();
+    if (!value || seen.has(value)) return;
+    seen.add(value);
+    input.add(new Option(value, value));
+  });
+  input.value = seen.has(selected) ? selected : '';
+}
+
+async function getGatewayTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id || !/^https?:\/\/(uat-)?gateway\.jdl\.com\//.test(tab.url || '')) {
+    throw new Error('请先切换到预发或线上网关的 API 新增页面。');
+  }
+  return tab;
+}
+
+async function readGatewayDropdowns(group) {
+  const tab = await getGatewayTab();
+  const result = await chrome.tabs.sendMessage(tab.id, { type: 'gateway-read-dropdown-options', group });
+  if (!result?.ok) throw new Error(result?.error || '未读取到网关下拉选项。');
+  return result;
+}
+
+function renderDomains(domains) {
+  dropdownOptions.domains = domains || [];
+  renderSelect(serviceDomainInput, dropdownOptions.domains, config[domainConfigKey()], '请选择服务域');
+}
+
+async function loadDomains(group) {
+  try {
+    const result = await readGatewayDropdowns(group);
+    dropdownOptions.groups = result.groups || dropdownOptions.groups;
+    renderSelect(businessGroupInput, dropdownOptions.groups, group, '请选择业务分组');
+    config.businessGroup = optionText(businessGroupInput);
+    renderDomains(result.domains);
+  } catch (error) {
+    renderDomains([]);
+    show(`服务域读取失败：${error.message}`, true);
+  }
+}
+
+async function loadGatewayDropdowns() {
+  try {
+    const result = await readGatewayDropdowns();
+    dropdownOptions.groups = result.groups || [];
+    const group = dropdownOptions.groups.some(item => item.text === config.businessGroup)
+      ? config.businessGroup
+      : result.selectedGroup || '';
+    renderSelect(businessGroupInput, dropdownOptions.groups, group, '请选择业务分组');
+    if (group) await loadDomains(group);
+    else renderDomains([]);
+  } catch (error) {
+    renderSelect(businessGroupInput, [], '', '请打开 API 新增页面后重试');
+    renderDomains([]);
+    show(`下拉选项读取失败：${error.message}`, true);
+  }
+}
 
 function parseTemplate(text) {
   const keys = { '接口签名': 'signature', 'jsf接口签名': 'signature', '应用': 'app', '应用名': 'app', '应用名称': 'app', '别名': 'alias', 'jsf别名': 'alias', 'jsf校验token': 'jsfToken', 'api名称': 'apiName', 'url': 'url', 'tps峰值': 'tps', '资产负责人': 'assetOwner', '敏感标签': 'sensitiveTag', '集群': 'cluster', '集群名称': 'cluster', '选择集群': 'cluster' };
@@ -48,7 +118,7 @@ function parseTemplate(text) {
   }
   const required = serviceType() === 'HTTP服务' ? ['app', 'apiName', 'url', 'cluster'] : ['signature', 'app', 'alias', 'apiName', 'url'];
   const missing = required.filter(key => !data[key]);
-  const errors = missing.length ? [`缺少：${missing.map(key => ({ signature: '接口签名', app: '应用', alias: '别名', apiName: 'API名称', url: 'URL' })[key]).join('、')}`] : [];
+  const errors = missing.length ? [`缺少：${missing.map(key => ({ signature: '接口签名', app: '应用', alias: '别名', apiName: 'API名称', url: 'URL', cluster: '集群' })[key]).join('、')}`] : [];
   if (serviceType() !== 'HTTP服务' && data.signature && !/^.+#.+$/.test(data.signature)) errors.push('接口签名应为“包名.接口名#方法名”。');
   if (data.tps && !/^\d+(\.\d+)?$/.test(data.tps)) errors.push('TPS峰值应为数字。');
   return { data, errors };
@@ -62,6 +132,7 @@ function renderProfile() {
   config.profile = profile.value;
   pinRuleRow.hidden = isHttp;
   if (isHttp) pinRule.checked = false;
+  renderDomains(dropdownOptions.domains);
   renderPreview();
 }
 
@@ -83,13 +154,15 @@ function renderPreview() {
 
 async function saveConfig() {
   Object.entries(configInputs).forEach(([key, input]) => { config[key] = input.value.trim(); });
+  config.businessGroup = optionText(businessGroupInput);
+  config[domainConfigKey()] = optionText(serviceDomainInput);
   config.profile = profile.value;
   const saved = await chrome.storage.local.get('gatewayAutofillConfigByEnvironment');
   const configurations = saved.gatewayAutofillConfigByEnvironment || {};
   configurations[environmentKey] = config;
   await chrome.storage.local.set({
     gatewayAutofillConfigByEnvironment: configurations,
-    gatewayAutofillEnvironmentSchema: '0.3.5'
+    gatewayAutofillEnvironmentSchema: '0.3.17'
   });
   renderProfile(); show('默认值已保存到此浏览器。');
 }
@@ -104,33 +177,38 @@ async function initialise() {
   const legacyConfig = { ...(saved.gatewayAutofillConfig || {}) };
   delete legacyConfig.businessGroup;
   const stored = { ...(saved.gatewayAutofillConfigByEnvironment || {}) };
-  if (saved.gatewayAutofillEnvironmentSchema !== '0.3.5' && stored.uat?.businessGroup === 'jdl_crm - 新CRM') {
-    delete stored.uat.businessGroup;
-  }
   const configurations = {
     uat: { ...ENVIRONMENT_DEFAULTS.uat, ...legacyConfig, ...(stored.uat || {}) },
     production: { ...ENVIRONMENT_DEFAULTS.production, ...legacyConfig, ...(stored.production || {}) }
   };
-  if (saved.gatewayAutofillEnvironmentSchema !== '0.3.5') {
+  if (saved.gatewayAutofillEnvironmentSchema !== '0.3.17') {
     await chrome.storage.local.set({
       gatewayAutofillConfigByEnvironment: configurations,
-      gatewayAutofillEnvironmentSchema: '0.3.5'
+      gatewayAutofillEnvironmentSchema: '0.3.17'
     });
   }
   config = { ...ENVIRONMENT_DEFAULTS[environmentKey], ...(configurations[environmentKey] || {}) };
-  // Migrate saved v0.2.0 preset identifiers without requiring the user to reset settings.
   if (config.profile === 'crm-jsf-uat') config.profile = 'crm-jsf';
   if (config.profile === 'crm-http-uat') config.profile = 'crm-http';
   profile.value = config.profile;
   environment.textContent = host === 'uat-gateway.jdl.com' ? '当前环境：预发网关' : host === 'gateway.jdl.com' ? '当前环境：线上网关' : '当前环境：请打开网关页面';
   Object.entries(configInputs).forEach(([key, input]) => { input.value = config[key]; });
   renderProfile();
+  await loadGatewayDropdowns();
 }
 
 template.addEventListener('input', renderPreview);
 profile.addEventListener('change', () => {
   renderProfile();
   saveProfileSelection().catch(error => show(`预设保存失败：${error.message}`, true));
+});
+businessGroupInput.addEventListener('change', () => {
+  const group = optionText(businessGroupInput);
+  config.businessGroup = group;
+  loadDomains(group);
+});
+serviceDomainInput.addEventListener('change', () => {
+  config[domainConfigKey()] = optionText(serviceDomainInput);
 });
 document.querySelector('#saveSettings').addEventListener('click', saveConfig);
 document.querySelectorAll('[data-template]').forEach(button => button.addEventListener('click', async () => {

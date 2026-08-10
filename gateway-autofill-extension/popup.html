@@ -9,7 +9,7 @@
   <body>
     <div id="toast" role="status" aria-live="polite"></div>
     <main>
-      <h1>网关 API 自动填写 <small>v0.3.16</small></h1>
+      <h1>网关 API 自动填写 <small>v0.3.17</small></h1>
       <p class="author">@bianlei5</p>
       <p id="environment" class="environment"></p>
       <label>预设
@@ -37,10 +37,9 @@ TPS峰值: 100
       <label class="rule"><input id="pinRule" type="checkbox" checked> 添加参数替换规则：位置 1，名称 pin</label>
       <details>
         <summary>默认值设置</summary>
-        <p class="hint">修改后会保存在本机浏览器，仅影响当前环境。</p>
-        <label>业务分组 <input id="businessGroup" type="text"></label>
-        <label>JSF 服务域 <input id="jsfDomain" type="text"></label>
-        <label>HTTP 服务域 <input id="httpDomain" type="text"></label>
+        <p class="hint">业务分组和服务域从当前 API 新增页面读取；修改后仅保存在本机浏览器和当前环境。</p>
+        <label>业务分组 <select id="businessGroup"><option value="">正在读取网关业务分组…</option></select></label>
+        <label>服务域 <select id="serviceDomain"><option value="">请先选择业务分组</option></select></label>
         <label>敏感标签 <input id="sensitiveTag" type="text"></label>
         <button id="saveSettings" class="secondary" type="button">保存默认值</button>
       </details>
