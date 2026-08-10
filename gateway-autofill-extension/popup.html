@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="popup.css">
+    <title>网关自动填写</title>
+  </head>
+  <body>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <main>
+      <h1>网关 API 自动填写 <small>v0.3.15</small></h1>
+      <p class="author">@bianlei5</p>
+      <p id="environment" class="environment"></p>
+      <label>预设
+        <select id="profile">
+          <option value="crm-jsf">CRM · JSF</option>
+          <option value="crm-http">CRM · HTTP</option>
+        </select>
+      </label>
+      <p id="profileHint" class="hint"></p>
+      <details class="templates">
+        <summary>填写模板（可复制）</summary>
+        <section class="template-card"><strong>CRM · JSF</strong><p>包含接口签名、应用名称、JSF 别名和校验 token。</p><button type="button" class="copy-template" data-template="jsf">复制 JSF 模板</button></section>
+        <section class="template-card"><strong>CRM · HTTP</strong><p>包含应用名称和集群；不填写 JSF 专属字段。</p><button type="button" class="copy-template" data-template="http">复制 HTTP 模板</button></section>
+      </details>
+      <textarea id="template" autofocus placeholder="接口签名: com.xxx.Api#method
+应用名称: app-name
+JSF别名: alias
+JSF校验token: token（可选）
+API名称: 接口名称
+URL: /path
+TPS峰值: 100
+资产负责人: xiaozhang
+集群: crm-customer"></textarea>
+      <section id="preview" aria-live="polite"></section>
+      <label class="rule"><input id="pinRule" type="checkbox" checked> 添加参数替换规则：位置 1，名称 pin</label>
+      <details>
+        <summary>默认值设置</summary>
+        <p class="hint">修改后会保存在本机浏览器，仅影响当前环境。</p>
+        <label>业务分组 <input id="businessGroup" type="text"></label>
+        <label>JSF 服务域 <input id="jsfDomain" type="text"></label>
+        <label>HTTP 服务域 <input id="httpDomain" type="text"></label>
+        <label>敏感标签 <input id="sensitiveTag" type="text"></label>
+        <button id="saveSettings" class="secondary" type="button">保存默认值</button>
+      </details>
+      <button id="fill">解析并填写</button>
+      <p id="status" role="status"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

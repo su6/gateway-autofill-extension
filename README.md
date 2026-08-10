@@ -1,0 +1,46 @@
+# 物流网关 API 自动填写（Chrome / Edge 扩展）
+
+当前版本：`0.3.15`
+
+在物流网关的“API 新增”弹窗中，粘贴约定模板即可自动解析并填写重复字段。扩展支持预发 `uat-gateway.jdl.com` 与线上 `gateway.jdl.com`；当前环境由打开的网关地址决定。预发和线上默认值、保存的设置彼此隔离：预发业务分组默认为 `jdl_crm - jdl_crm`，线上默认为 `jdl_crm - 新CRM`。预设只描述业务及协议：CRM-JSF、CRM-HTTP。默认值设置仅保存在本机浏览器。
+
+## 安装
+
+1. 打开 `chrome://extensions`（Edge 使用 `edge://extensions`），开启“开发者模式”。
+2. 点击“加载已解压的扩展程序”，选择本目录。
+3. 打开预发 `http://uat-gateway.jdl.com/` 或线上 `http://gateway.jdl.com/`，进入“API 新增”弹窗，点击工具栏中的“物流网关 API 自动填写”。
+
+## 粘贴格式
+
+```text
+接口签名:com.jdl.crm.customer.api.service.factoring.CrmFactoringApplyApi#queryApplyPage
+应用名称：crm-customer
+JSF别名：crm-uat
+JSF校验token：1234
+API名称：查询客户接口
+URL ：/crm/query
+TPS峰值：100
+资产负责人：xiaozhang
+```
+
+## 填写规则
+
+| 来源 | 网关字段 |
+| --- | --- |
+| API名称 | API名称、业务描述 |
+| URL | URL |
+| 接口签名中 `#` 前 | JSF接口名 |
+| 接口签名中 `#` 后 | JSF方法名 |
+| JSF别名 | JSF别名 |
+| 应用名称 | 应用名称 |
+| JSF校验token | JSF校验token |
+| TPS峰值 | TPS峰值 |
+| 资产负责人 | 资产负责人 |
+
+服务类型由预设决定：默认“CRM · JSF”，它会选择 JSF 服务域并填写 JSF 服务提供者；选择“CRM · HTTP”时，会选择 HTTP 服务域、应用名称和集群配置。HTTP 模板必须包含 `应用名称`、`API名称`、`URL` 与 `集群`；JSF 专属字段不会填写到 HTTP 服务。弹窗“填写模板（可复制）”提供两种标准模板。
+
+填写前会预览已解析的 API、服务类型、敏感标签、TPS、负责人及集群，并提示模板缺失项或格式错误。默认选择：接口类型“查询”、流量类型“ToB(商家)”、不支持 mock、用户类型“京东员工(ERP登录)”、接口等级 1、是否订单相关“否”、**勾选允许匿名访问**。模板可用 `敏感标签：xxx` 覆盖默认值。参数替换规则仅在 JSF 预设下显示；切换为 HTTP 时自动隐藏且不会解析。预设选择会按预发、线上环境分别记住。
+
+## 上线前验证
+
+扩展不会点击“保存”，避免自动创建接口。敏感标签会点击“接口属性”的真实箭头，展开二级菜单后选择 `ToB`；参数规则会等待 JSF 表单切换完成，再展开、添加并填写。
