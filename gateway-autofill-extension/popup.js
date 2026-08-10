@@ -16,8 +16,8 @@ const pinRuleRow = pinRule.closest('.rule');
 const preview = document.querySelector('#preview');
 const environment = document.querySelector('#environment');
 const TEMPLATE_TEXTS = {
-  jsf: `CRM.JSF\n接口签名: com.jdl.crm.customer.api.service.factoring.CrmFactoringApplyApi#getEnums\n应用名称: crm-customer\nJSF别名: crm-uat\nJSF校验token: 1234\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5`,
-  http: `CRM.HTTP\n应用名称: crm-customer\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5\n集群: crm-customer`
+  jsf: `JSF\n接口签名: com.jdl.crm.customer.api.service.factoring.CrmFactoringApplyApi#getEnums\n应用名称: crm-customer\nJSF别名: crm-uat\nJSF校验token: 1234\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5`,
+  http: `HTTP\n应用名称: crm-customer\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5\n集群: crm-customer`
 };
 const configInputs = ['businessGroup', 'jsfDomain', 'httpDomain', 'sensitiveTag']
   .reduce((all, id) => ({ ...all, [id]: document.querySelector(`#${id}`) }), {});

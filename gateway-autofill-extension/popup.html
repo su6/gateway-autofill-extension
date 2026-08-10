@@ -9,20 +9,20 @@
   <body>
     <div id="toast" role="status" aria-live="polite"></div>
     <main>
-      <h1>网关 API 自动填写 <small>v0.3.15</small></h1>
+      <h1>网关 API 自动填写 <small>v0.3.16</small></h1>
       <p class="author">@bianlei5</p>
       <p id="environment" class="environment"></p>
       <label>预设
         <select id="profile">
-          <option value="crm-jsf">CRM · JSF</option>
-          <option value="crm-http">CRM · HTTP</option>
+          <option value="crm-jsf">JSF 服务</option>
+          <option value="crm-http">HTTP 服务</option>
         </select>
       </label>
       <p id="profileHint" class="hint"></p>
       <details class="templates">
         <summary>填写模板（可复制）</summary>
-        <section class="template-card"><strong>CRM · JSF</strong><p>包含接口签名、应用名称、JSF 别名和校验 token。</p><button type="button" class="copy-template" data-template="jsf">复制 JSF 模板</button></section>
-        <section class="template-card"><strong>CRM · HTTP</strong><p>包含应用名称和集群；不填写 JSF 专属字段。</p><button type="button" class="copy-template" data-template="http">复制 HTTP 模板</button></section>
+        <section class="template-card"><strong>JSF 服务</strong><p>包含接口签名、应用名称、JSF 别名和校验 token。</p><button type="button" class="copy-template" data-template="jsf">复制 JSF 模板</button></section>
+        <section class="template-card"><strong>HTTP 服务</strong><p>包含应用名称和集群；不填写 JSF 专属字段。</p><button type="button" class="copy-template" data-template="http">复制 HTTP 模板</button></section>
       </details>
       <textarea id="template" autofocus placeholder="接口签名: com.xxx.Api#method
 应用名称: app-name
