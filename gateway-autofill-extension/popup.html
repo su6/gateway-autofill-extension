@@ -9,16 +9,17 @@
   <body>
     <div id="toast" role="status" aria-live="polite"></div>
     <main>
-      <h1>网关 API 自动填写 <small>v0.3.17</small></h1>
+      <h1>网关 API 自动填写 <small>v0.3.18</small></h1>
       <p class="author">@bianlei5</p>
       <p id="environment" class="environment"></p>
-      <label>预设
-        <select id="profile">
-          <option value="crm-jsf">JSF 服务</option>
-          <option value="crm-http">HTTP 服务</option>
-        </select>
-      </label>
-      <p id="profileHint" class="hint"></p>
+      <details open>
+        <summary>默认配置</summary>
+        <p class="hint">首次选择后会按当前环境保存在本机；提交接口后再次打开会自动使用。</p>
+        <label>业务分组 <select id="businessGroup"><option value="">正在读取网关业务分组…</option></select></label>
+        <label>服务域 <select id="serviceDomain"><option value="">请先选择业务分组</option></select></label>
+        <label>敏感标签 <input id="sensitiveTag" type="text"></label>
+        <button id="saveSettings" class="secondary" type="button">保存默认配置</button>
+      </details>
       <details class="templates">
         <summary>填写模板（可复制）</summary>
         <section class="template-card"><strong>JSF 服务</strong><p>包含接口签名、应用名称、JSF 别名和校验 token。</p><button type="button" class="copy-template" data-template="jsf">复制 JSF 模板</button></section>
@@ -35,14 +36,6 @@ TPS峰值: 100
 集群: crm-customer"></textarea>
       <section id="preview" aria-live="polite"></section>
       <label class="rule"><input id="pinRule" type="checkbox" checked> 添加参数替换规则：位置 1，名称 pin</label>
-      <details>
-        <summary>默认值设置</summary>
-        <p class="hint">业务分组和服务域从当前 API 新增页面读取；修改后仅保存在本机浏览器和当前环境。</p>
-        <label>业务分组 <select id="businessGroup"><option value="">正在读取网关业务分组…</option></select></label>
-        <label>服务域 <select id="serviceDomain"><option value="">请先选择业务分组</option></select></label>
-        <label>敏感标签 <input id="sensitiveTag" type="text"></label>
-        <button id="saveSettings" class="secondary" type="button">保存默认值</button>
-      </details>
       <button id="fill">解析并填写</button>
       <p id="status" role="status"></p>
     </main>

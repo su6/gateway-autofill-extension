@@ -361,7 +361,7 @@
         const serviceType = message.serviceType === 'HTTP服务' ? 'HTTP服务' : 'JSF服务';
         const data = parse(message.text, serviceType);
         const config = {
-          businessGroup: '', jsfDomain: '', httpDomain: '',
+          businessGroup: '', serviceDomain: '', jsfDomain: '', httpDomain: '',
           sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)', ...(message.config || {})
         };
         const fields = [
@@ -375,7 +375,7 @@
         const groupSelected = await selectDropdown('业务分组', config.businessGroup);
         if (groupSelected) filled.push('业务分组'); else missing.push('业务分组');
         await wait(350);
-        const domain = serviceType === 'HTTP服务' ? config.httpDomain : config.jsfDomain;
+        const domain = config.serviceDomain || (serviceType === 'HTTP服务' ? config.httpDomain : config.jsfDomain);
         const domainSelected = await selectDropdown('服务域', domain);
         if (domainSelected) filled.push('服务域'); else missing.push('服务域');
         await wait(150);

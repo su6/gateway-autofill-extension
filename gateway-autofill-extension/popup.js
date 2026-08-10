@@ -1,6 +1,5 @@
 const COMMON_DEFAULTS = {
-  jsfDomain: '', httpDomain: '',
-  sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)', profile: 'crm-jsf'
+  serviceDomain: '', sensitiveTag: 'ToB', apiType: '查询', flowType: 'ToB(商家)'
 };
 const ENVIRONMENT_DEFAULTS = {
   uat: { ...COMMON_DEFAULTS, businessGroup: '' },
@@ -9,8 +8,6 @@ const ENVIRONMENT_DEFAULTS = {
 const template = document.querySelector('#template');
 const button = document.querySelector('#fill');
 const status = document.querySelector('#status');
-const profile = document.querySelector('#profile');
-const profileHint = document.querySelector('#profileHint');
 const pinRule = document.querySelector('#pinRule');
 const pinRuleRow = pinRule.closest('.rule');
 const preview = document.querySelector('#preview');
@@ -27,8 +24,11 @@ let config = { ...ENVIRONMENT_DEFAULTS.uat };
 let environmentKey = 'uat';
 let dropdownOptions = { groups: [], domains: [] };
 
-function serviceType() { return profile.value === 'crm-http' ? 'HTTP服务' : 'JSF服务'; }
-function domainConfigKey() { return serviceType() === 'HTTP服务' ? 'httpDomain' : 'jsfDomain'; }
+function serviceType() {
+  return /(?:^|\n)\s*(?:接口签名|JSF接口签名|JSF别名|JSF校验token)\s*[：:]/i.test(template.value)
+    ? 'JSF服务'
+    : 'HTTP服务';
+}
 function show(message, error = false) { status.textContent = message; status.className = error ? 'error' : ''; }
 function showToast(message) {
   const toast = document.querySelector('#toast');
@@ -72,7 +72,7 @@ async function readGatewayDropdowns(group) {
 
 function renderDomains(domains) {
   dropdownOptions.domains = domains || [];
-  renderSelect(serviceDomainInput, dropdownOptions.domains, config[domainConfigKey()], '请选择服务域');
+  renderSelect(serviceDomainInput, dropdownOptions.domains, config.serviceDomain, '请选择服务域');
 }
 
 async function loadDomains(group) {
@@ -124,24 +124,10 @@ function parseTemplate(text) {
   return { data, errors };
 }
 
-function renderProfile() {
-  const isHttp = serviceType() === 'HTTP服务';
-  profileHint.textContent = isHttp
-    ? `HTTP 服务：${config.httpDomain}；将切换为集群配置。`
-    : `JSF 服务：${config.jsfDomain}；将填写 JSF 服务提供者。`;
-  config.profile = profile.value;
-  pinRuleRow.hidden = isHttp;
-  if (isHttp) pinRule.checked = false;
+function renderServiceMode() {
+  pinRuleRow.hidden = serviceType() !== 'JSF服务';
   renderDomains(dropdownOptions.domains);
   renderPreview();
-}
-
-async function saveProfileSelection() {
-  config.profile = profile.value;
-  const saved = await chrome.storage.local.get('gatewayAutofillConfigByEnvironment');
-  const configurations = saved.gatewayAutofillConfigByEnvironment || {};
-  configurations[environmentKey] = { ...(configurations[environmentKey] || {}), profile: config.profile };
-  await chrome.storage.local.set({ gatewayAutofillConfigByEnvironment: configurations });
 }
 
 function renderPreview() {
@@ -155,16 +141,15 @@ function renderPreview() {
 async function saveConfig() {
   Object.entries(configInputs).forEach(([key, input]) => { config[key] = input.value.trim(); });
   config.businessGroup = optionText(businessGroupInput);
-  config[domainConfigKey()] = optionText(serviceDomainInput);
-  config.profile = profile.value;
+  config.serviceDomain = optionText(serviceDomainInput);
   const saved = await chrome.storage.local.get('gatewayAutofillConfigByEnvironment');
   const configurations = saved.gatewayAutofillConfigByEnvironment || {};
   configurations[environmentKey] = config;
   await chrome.storage.local.set({
     gatewayAutofillConfigByEnvironment: configurations,
-    gatewayAutofillEnvironmentSchema: '0.3.17'
+    gatewayAutofillEnvironmentSchema: '0.3.18'
   });
-  renderProfile(); show('默认值已保存到此浏览器。');
+  renderServiceMode(); show('默认配置已保存到此浏览器。');
 }
 
 async function initialise() {
@@ -181,34 +166,30 @@ async function initialise() {
     uat: { ...ENVIRONMENT_DEFAULTS.uat, ...legacyConfig, ...(stored.uat || {}) },
     production: { ...ENVIRONMENT_DEFAULTS.production, ...legacyConfig, ...(stored.production || {}) }
   };
-  if (saved.gatewayAutofillEnvironmentSchema !== '0.3.17') {
+  Object.values(configurations).forEach(item => {
+    if (!item.serviceDomain) item.serviceDomain = item.profile === 'crm-http' ? item.httpDomain || item.jsfDomain || '' : item.jsfDomain || item.httpDomain || '';
+  });
+  if (saved.gatewayAutofillEnvironmentSchema !== '0.3.18') {
     await chrome.storage.local.set({
       gatewayAutofillConfigByEnvironment: configurations,
-      gatewayAutofillEnvironmentSchema: '0.3.17'
+      gatewayAutofillEnvironmentSchema: '0.3.18'
     });
   }
   config = { ...ENVIRONMENT_DEFAULTS[environmentKey], ...(configurations[environmentKey] || {}) };
-  if (config.profile === 'crm-jsf-uat') config.profile = 'crm-jsf';
-  if (config.profile === 'crm-http-uat') config.profile = 'crm-http';
-  profile.value = config.profile;
   environment.textContent = host === 'uat-gateway.jdl.com' ? '当前环境：预发网关' : host === 'gateway.jdl.com' ? '当前环境：线上网关' : '当前环境：请打开网关页面';
   Object.entries(configInputs).forEach(([key, input]) => { input.value = config[key]; });
-  renderProfile();
+  renderServiceMode();
   await loadGatewayDropdowns();
 }
 
-template.addEventListener('input', renderPreview);
-profile.addEventListener('change', () => {
-  renderProfile();
-  saveProfileSelection().catch(error => show(`预设保存失败：${error.message}`, true));
-});
+template.addEventListener('input', renderServiceMode);
 businessGroupInput.addEventListener('change', () => {
   const group = optionText(businessGroupInput);
   config.businessGroup = group;
   loadDomains(group);
 });
 serviceDomainInput.addEventListener('change', () => {
-  config[domainConfigKey()] = optionText(serviceDomainInput);
+  config.serviceDomain = optionText(serviceDomainInput);
 });
 document.querySelector('#saveSettings').addEventListener('click', saveConfig);
 document.querySelectorAll('[data-template]').forEach(button => button.addEventListener('click', async () => {
