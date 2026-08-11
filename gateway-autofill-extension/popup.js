@@ -15,6 +15,15 @@ const environment = document.querySelector('#environment');
 const businessGroupInput = document.querySelector('#businessGroup');
 const serviceDomainInput = document.querySelector('#serviceDomain');
 const serviceTypeInput = document.querySelector('#serviceType');
+const app = document.querySelector('#app');
+const miniSettingsTrigger = document.querySelector('#miniSettingsTrigger');
+const miniEnvironment = document.querySelector('#miniEnvironment');
+const miniTaskDomain = document.querySelector('#miniTaskDomain');
+const configPanel = document.querySelector('.config-panel');
+const configCollapse = document.querySelector('#configCollapse');
+const displayModeButtons = [...document.querySelectorAll('[data-display-mode]')];
+const copyTemplateButton = document.querySelector('#copyTemplate');
+const miniCopyTemplateButton = document.querySelector('#miniCopyTemplate');
 const TEMPLATE_TEXTS = {
   jsf: `JSF\n接口签名: com.jdl.crm.customer.api.service.factoring.CrmFactoringApplyApi#getEnums\n应用名称: crm-customer\nJSF别名: crm-uat\nJSF校验token: 1234\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5`,
   http: `HTTP\n应用名称: crm-customer\nAPI名称: 保理申请页面枚举查询\nURL: /factoring/getEnums\nTPS峰值: 100\n资产负责人: bianlei5\n集群: crm-customer`
@@ -24,6 +33,9 @@ const configInputs = ['sensitiveTag']
 let config = { ...ENVIRONMENT_DEFAULTS.uat };
 let environmentKey = 'uat';
 let dropdownOptions = { groups: [], domains: [], types: [] };
+let selectedTemplate = 'jsf';
+let displayMode = 'standard';
+let configCollapsed = false;
 
 function serviceType() { return serviceTypeInput.value; }
 function show(message, error = false) { status.textContent = message; status.className = error ? 'error' : ''; }
@@ -33,6 +45,42 @@ function showToast(message) {
   toast.classList.add('visible');
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => toast.classList.remove('visible'), 2000);
+}
+function renderTemplateChoice() {
+  document.querySelectorAll('.template-tab').forEach(tab => {
+    const active = tab.dataset.template === selectedTemplate;
+    tab.classList.toggle('active', active);
+    tab.setAttribute('aria-selected', String(active));
+  });
+  copyTemplateButton.textContent = `复制 ${selectedTemplate.toUpperCase()} 模板`;
+  miniCopyTemplateButton.textContent = `复制 ${selectedTemplate.toUpperCase()} 模板`;
+}
+function renderDisplayMode() {
+  const mini = displayMode === 'mini';
+  app.classList.toggle('is-mini', mini);
+  if (!mini) app.classList.remove('mini-settings-open');
+  miniSettingsTrigger.setAttribute('aria-expanded', String(app.classList.contains('mini-settings-open')));
+  displayModeButtons.forEach(item => {
+    const selected = item.dataset.displayMode === displayMode;
+    item.classList.toggle('active', selected);
+    item.setAttribute('aria-pressed', String(selected));
+  });
+  renderTemplateChoice();
+}
+function renderConfigCollapse() {
+  configPanel.classList.toggle('is-collapsed', configCollapsed);
+  configCollapse.setAttribute('aria-expanded', String(!configCollapsed));
+  configCollapse.querySelector('i').textContent = configCollapsed ? '⌄' : '⌃';
+}
+async function toggleConfigCollapse() {
+  configCollapsed = !configCollapsed;
+  renderConfigCollapse();
+  await chrome.storage.local.set({ gatewayAutofillConfigCollapsed: configCollapsed });
+}
+async function changeDisplayMode(mode) {
+  displayMode = mode === 'mini' ? 'mini' : 'standard';
+  renderDisplayMode();
+  await chrome.storage.local.set({ gatewayAutofillDisplayMode: displayMode });
 }
 function normalise(value) { return String(value || '').replace(/[\s：:]/g, '').toLowerCase(); }
 
@@ -185,7 +233,7 @@ async function initialise() {
   const host = new URL(tab?.url || 'http://invalid/').hostname;
   environmentKey = host === 'gateway.jdl.com' ? 'production' : 'uat';
   const saved = await chrome.storage.local.get([
-    'gatewayAutofillConfig', 'gatewayAutofillConfigByEnvironment', 'gatewayAutofillEnvironmentSchema'
+    'gatewayAutofillConfig', 'gatewayAutofillConfigByEnvironment', 'gatewayAutofillEnvironmentSchema', 'gatewayAutofillDisplayMode', 'gatewayAutofillConfigCollapsed'
   ]);
   const legacyConfig = { ...(saved.gatewayAutofillConfig || {}) };
   delete legacyConfig.businessGroup;
@@ -205,11 +253,18 @@ async function initialise() {
   }
   config = { ...ENVIRONMENT_DEFAULTS[environmentKey], ...(configurations[environmentKey] || {}) };
   if (!config.serviceType) config.serviceType = config.profile === 'crm-http' ? 'HTTP服务' : 'JSF服务';
+  displayMode = saved.gatewayAutofillDisplayMode === 'mini' ? 'mini' : 'standard';
+  configCollapsed = saved.gatewayAutofillConfigCollapsed === true;
   environment.textContent = host === 'uat-gateway.jdl.com' ? '当前环境：预发网关' : host === 'gateway.jdl.com' ? '当前环境：线上网关' : '当前环境：请打开网关页面';
+  miniEnvironment.textContent = host === 'uat-gateway.jdl.com' ? '预发网关' : host === 'gateway.jdl.com' ? '线上网关' : '请打开网关页面';
   Object.entries(configInputs).forEach(([key, input]) => { input.value = config[key]; });
   serviceTypeInput.value = config.serviceType;
+  renderDisplayMode();
+  renderConfigCollapse();
+  renderTemplateChoice();
   renderServiceMode();
   await loadGatewayDropdowns();
+  miniTaskDomain.textContent = optionText(serviceDomainInput) || '网关服务域';
 }
 
 template.addEventListener('input', renderPreview);
@@ -221,6 +276,7 @@ businessGroupInput.addEventListener('change', () => {
 });
 serviceDomainInput.addEventListener('change', () => {
   config.serviceDomain = optionText(serviceDomainInput);
+  miniTaskDomain.textContent = config.serviceDomain || '网关服务域';
   loadServiceTypes(config.businessGroup, config.serviceDomain);
 });
 serviceTypeInput.addEventListener('change', () => {
@@ -228,11 +284,24 @@ serviceTypeInput.addEventListener('change', () => {
   renderServiceMode();
 });
 document.querySelector('#saveSettings').addEventListener('click', saveConfig);
-document.querySelectorAll('[data-template]').forEach(button => button.addEventListener('click', async () => {
-  const text = TEMPLATE_TEXTS[button.dataset.template];
-  await navigator.clipboard.writeText(text);
-    showToast('已复制成功');
+document.querySelectorAll('.template-tab').forEach(tab => tab.addEventListener('click', () => {
+  selectedTemplate = tab.dataset.template;
+  renderTemplateChoice();
+  show('已选择参考模板；点击“复制当前模板”后到记事本修改。');
 }));
+async function copyCurrentTemplate() {
+  const text = TEMPLATE_TEXTS[selectedTemplate];
+  await navigator.clipboard.writeText(text);
+  showToast('模板已复制，修改后粘贴到下方输入框。');
+}
+copyTemplateButton.addEventListener('click', copyCurrentTemplate);
+miniCopyTemplateButton.addEventListener('click', copyCurrentTemplate);
+displayModeButtons.forEach(item => item.addEventListener('click', () => changeDisplayMode(item.dataset.displayMode)));
+miniSettingsTrigger.addEventListener('click', () => {
+  app.classList.toggle('mini-settings-open');
+  miniSettingsTrigger.setAttribute('aria-expanded', String(app.classList.contains('mini-settings-open')));
+});
+configCollapse.addEventListener('click', toggleConfigCollapse);
 
 button.addEventListener('click', async () => {
   if (!serviceType()) return show('请先在默认配置中选择服务类型。', true);
