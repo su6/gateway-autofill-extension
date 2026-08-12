@@ -1,5 +1,5 @@
 {
-  "version": "0.3.24",
-  "notes": "新增检查更新入口",
-  "releaseUrl": "https://github.com/su6/gateway-autofill-extension/releases/tag/v0.3.24"
+  "version": "0.3.25",
+  "notes": "优化更新提示与标准/Mini 模式切换布局",
+  "releaseUrl": "https://github.com/su6/gateway-autofill-extension/releases/tag/v0.3.25"
 }
