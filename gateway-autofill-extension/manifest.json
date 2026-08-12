@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "物流网关 API 自动填写",
-  "version": "0.3.25",
+  "version": "0.3.26",
   "description": "解析网关 API 模板并自动填写重复字段。",
   "permissions": ["tabs", "storage"],
   "host_permissions": [

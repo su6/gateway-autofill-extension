@@ -18,9 +18,10 @@ main.has-update .masthead { min-height: 132px; padding-bottom: 43px; }
 .eyebrow { margin: 0 0 7px; color: #b8e1dd; font-size: 10px; font-weight: 800; letter-spacing: .115em; }
 h1 { margin: 0; color: #fff; font-size: 23px; font-weight: 720; letter-spacing: -.025em; }
 .mini-brand, .mini-environment, .mini-task, .mini-intro, .mini-editor-label, .mini-helper, .mini-settings-trigger, #miniCopyTemplate { display: none; }
-.masthead-meta { display: grid; justify-items: end; gap: 8px; }
-.version { padding: 4px 7px; border: 1px solid rgba(235,255,251,.5); border-radius: 5px; color: #effffb; font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
-.author { margin: 0; color: #bbe0dc; font-size: 10px; }
+.masthead-meta { display: grid; justify-items: end; }
+.standard-meta { display: flex; align-items: center; gap: 5px; margin: 3px 0 0; color: #bfe5e0; font-size: 10px; line-height: 1; }
+.version { color: #effffb; font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.author { color: #bfe5e0; }
 .runtime-bar { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 16px; border-bottom: 1px solid #bfd4d2; background: #f0f6f5; }
 .environment { margin: 0; color: #16746d; font-size: 13px; font-weight: 750; }
 .environment::before { display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #1db5a6; box-shadow: 0 0 0 4px rgba(29,181,166,.12); content: ""; }
@@ -85,7 +86,7 @@ main.is-mini { display: flex; flex-direction: column; min-height: 100%; padding:
 main.is-mini .masthead { order: 1; min-height: 60px; align-items: center; padding: 10px 14px; border-radius: 12px 12px 0 0; background: #11242d; }
 main.is-mini.has-update .masthead { min-height: 94px; align-items: flex-start; padding-bottom: 38px; }
 main.is-mini #updateNotice { bottom: 7px; left: 14px; width: 220px; }
-main.is-mini .standard-brand, main.is-mini .version, main.is-mini .author, main.is-mini .runtime-bar { display: none; }
+main.is-mini .standard-brand, main.is-mini .standard-meta, main.is-mini .runtime-bar { display: none; }
 main.is-mini .mini-brand { display: flex; align-items: center; gap: 9px; }
 main.is-mini .mini-mark { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 8px; background: #05a991; color: #102631; font-size: 17px; font-weight: 900; }
 main.is-mini .mini-brand h1 { font-size: 14px; letter-spacing: -.025em; }
