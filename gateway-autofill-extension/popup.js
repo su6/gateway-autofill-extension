@@ -267,7 +267,9 @@ async function saveConfig() {
     gatewayAutofillConfigByEnvironment: configurations,
     gatewayAutofillEnvironmentSchema: '0.3.18'
   });
-  renderServiceMode(); show('默认配置已保存到此浏览器。');
+  renderServiceMode();
+  show('默认配置已保存到此浏览器。');
+  showToast('默认配置已保存。');
 }
 
 async function initialise() {
