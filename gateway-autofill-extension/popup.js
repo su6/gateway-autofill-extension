@@ -134,6 +134,7 @@ async function loadServiceTypes(group, domain) {
     config.businessGroup = optionText(businessGroupInput);
     config.serviceDomain = optionText(serviceDomainInput);
     renderServiceTypes(result.types);
+    renderServiceMode();
     if (!serviceType()) show('请选择服务类型；服务类型由当前服务域联动加载。');
   } catch (error) {
     renderServiceTypes([]);

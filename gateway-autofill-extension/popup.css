@@ -93,7 +93,8 @@ main.is-mini .paste-step { display: block; }
 main.is-mini .mini-editor-label { display: flex; align-items: center; justify-content: space-between; padding: 10px 11px 0; color: #087d74; font-size: 11px; }
 main.is-mini .mini-editor-label span { padding: 2px 6px; border: 1px solid #bfded9; border-radius: 4px; color: #6b898a; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
 main.is-mini textarea { height: 153px; margin-top: 0; padding: 8px 11px 11px; border: 2px solid #04a78e; border-radius: 12px; background: #fff; font-size: 11px; }
-main.is-mini #preview, main.is-mini .rule { display: none; }
+main.is-mini #preview { display: none; }
+main.is-mini .rule { display: block; margin: 8px 0 0; color: #58747b; font-size: 10px; }
 main.is-mini .mini-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 14px 0; }
 main.is-mini #miniCopyTemplate { display: block; min-height: 40px; border: 1px solid #b8cdcc; border-radius: 9px; background: #fff; color: #45646d; }
 main.is-mini #fill { min-height: 40px; border-radius: 9px; background: #05a991; box-shadow: none; }
