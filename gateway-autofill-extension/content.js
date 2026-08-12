@@ -295,21 +295,23 @@
     return false;
   }
 
-  async function addPinRule() {
+  async function addPinRule(rule = {}) {
+    const positionValue = String(rule.position || '1').trim();
+    const nameValue = String(rule.name || 'pin').trim();
     const fillById = () => {
       const position = document.querySelector('#rule-target-arg_index1');
       const name = document.querySelector('#rule-target-attr_name1');
       if (!visible(position) || !visible(name)) return false;
-      setValue(position, '1');
-      setValue(name, 'pin');
+      setValue(position, positionValue);
+      setValue(name, nameValue);
       return true;
     };
     const findRuleFields = () => ({ position: findControl('参数位置'), name: findControl('参数名称') });
     const fillExisting = () => {
       const { position, name } = findRuleFields();
       if (!position || !name) return false;
-      setValue(position, '1');
-      setValue(name, 'pin');
+      setValue(position, positionValue);
+      setValue(name, nameValue);
       return true;
     };
     if (fillById() || fillExisting()) return true;
@@ -422,7 +424,7 @@
         } else if (clickFormGroupOption('是否订单相关', '否')) filled.push('是否订单相关'); else missing.push('是否订单相关');
         if (setCheckbox('允许匿名访问', true)) filled.push('允许匿名访问'); else missing.push('允许匿名访问');
         if (message.addPinRule) {
-          if (await addPinRule()) filled.push('参数替换规则'); else missing.push('参数替换规则');
+          if (await addPinRule(message.parameterRule)) filled.push('参数替换规则'); else missing.push('参数替换规则');
         }
         // 网关在服务类型、标签和参数规则联动期间会重置 JSF 应用名称；
         // 全部联动结束后再回填一次，确保最终页面值正确。

@@ -31,8 +31,8 @@ h1 { margin: 0; color: #fff; font-size: 23px; font-weight: 720; letter-spacing: 
 .hint { margin: 9px 13px 5px; color: #617d84; font-size: 12px; }
 .config-form { padding: 4px 13px 8px; }
 .config-form label { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 9px; min-height: 39px; color: #516d75; font-size: 12px; font-weight: 650; }
-select, input[type=text] { width: 100%; min-width: 0; min-height: 31px; padding: 6px 8px; border: 1px solid #b7d1ce; border-radius: 5px; background: #fbfdfd; color: #263c43; font: inherit; }
-select:focus, input[type=text]:focus, textarea:focus { outline: 2px solid rgba(24,184,170,.2); border-color: #18a99e; }
+select, input[type=text], input[type=number] { width: 100%; min-width: 0; min-height: 31px; padding: 6px 8px; border: 1px solid #b7d1ce; border-radius: 5px; background: #fbfdfd; color: #263c43; font: inherit; }
+select:focus, input[type=text]:focus, input[type=number]:focus, textarea:focus { outline: 2px solid rgba(24,184,170,.2); border-color: #18a99e; }
 button { border: 0; border-radius: 6px; cursor: pointer; font: inherit; font-weight: 650; transition: filter .15s, transform .15s; }
 button:hover { filter: brightness(.97); transform: translateY(-1px); }
 .config-actions { display: flex; align-items: center; gap: 8px; padding: 0 13px 13px; }
@@ -57,8 +57,15 @@ textarea { width: 100%; height: 126px; margin-top: 7px; padding: 8px 9px; border
 #preview.ok { border-color: #1db5a6; }
 #preview.error, #status.error { color: #bd3636; }
 #preview.error { border-color: #d45a5a; }
-.rule { display: block; margin-top: 9px; color: #405d64; font-size: 12px; }
-.rule input { margin: 0 5px 0 0; vertical-align: -1px; }
+.rule { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 10px; margin-top: 9px; color: #405d64; font-size: 12px; }
+.rule-enabled { white-space: nowrap; }
+.rule-enabled input { margin: 0 5px 0 0; vertical-align: -1px; }
+.rule-fields { display: flex; align-items: center; gap: 7px; }
+.rule-fields label { display: flex; align-items: center; gap: 4px; color: #58747b; font-size: 11px; }
+.rule-fields input { min-height: 27px; padding: 4px 6px; }
+.rule-fields input:disabled { border-color: #d6e2e0; background: #f2f6f5; color: #91a3a5; cursor: not-allowed; }
+#pinRulePosition { width: 48px; }
+#pinRuleName { width: 78px; }
 .mini-actions { margin: 11px 13px 0; }
 #fill { width: 100%; padding: 12px; background: linear-gradient(90deg, #006b65, #008c83); color: #fff; box-shadow: 0 7px 13px rgba(0,118,110,.17); }
 #fill::before { margin-right: 8px; color: #bbebe4; content: "→"; }
@@ -94,7 +101,10 @@ main.is-mini .mini-editor-label { display: flex; align-items: center; justify-co
 main.is-mini .mini-editor-label span { padding: 2px 6px; border: 1px solid #bfded9; border-radius: 4px; color: #6b898a; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
 main.is-mini textarea { height: 153px; margin-top: 0; padding: 8px 11px 11px; border: 2px solid #04a78e; border-radius: 12px; background: #fff; font-size: 11px; }
 main.is-mini #preview { display: none; }
-main.is-mini .rule { display: block; margin: 8px 0 0; color: #58747b; font-size: 10px; }
+main.is-mini .rule { display: flex; margin: 8px 0 0; color: #58747b; font-size: 10px; }
+main.is-mini .rule-fields { gap: 5px; }
+main.is-mini .rule-fields label { font-size: 10px; }
+main.is-mini .rule-fields input { min-height: 25px; font-size: 10px; }
 main.is-mini .mini-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 14px 0; }
 main.is-mini #miniCopyTemplate { display: block; min-height: 40px; border: 1px solid #b8cdcc; border-radius: 9px; background: #fff; color: #45646d; }
 main.is-mini #fill { min-height: 40px; border-radius: 9px; background: #05a991; box-shadow: none; }
@@ -111,6 +121,9 @@ main.is-mini.mini-settings-open .config-panel { display: block; order: 3; margin
 main.is-mini.mini-settings-open .config-panel .config-collapse { display: none; }
 main.is-mini.mini-settings-open .config-panel .hint { margin-top: 10px; }
 main.is-mini.mini-settings-open .config-actions { padding-bottom: 11px; }
+main.is-mini.mini-settings-open .config-panel.is-collapsed .hint,
+main.is-mini.mini-settings-open .config-panel.is-collapsed .config-form { display: block; }
+main.is-mini.mini-settings-open .config-panel.is-collapsed .config-actions { display: flex; }
 main.is-mini .mode-dock { top: 76px; right: 22px; box-shadow: 0 2px 7px rgba(18,48,52,.08); }
 main.is-mini .mode-dock button { min-width: 34px; padding: 4px 5px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0s !important; } }
