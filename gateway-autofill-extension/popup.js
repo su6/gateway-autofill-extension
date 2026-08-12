@@ -8,6 +8,10 @@ const ENVIRONMENT_DEFAULTS = {
 const template = document.querySelector('#template');
 const button = document.querySelector('#fill');
 const status = document.querySelector('#status');
+const updateNotice = document.querySelector('#updateNotice');
+const updateMessage = document.querySelector('#updateMessage');
+const openUpdate = document.querySelector('#openUpdate');
+const closeUpdate = document.querySelector('#closeUpdate');
 const pinRule = document.querySelector('#pinRule');
 const pinRuleRow = pinRule.closest('.rule');
 const pinRulePosition = document.querySelector('#pinRulePosition');
@@ -39,6 +43,9 @@ let selectedTemplate = 'jsf';
 let displayMode = 'standard';
 let configCollapsed = false;
 let parameterRule = { enabled: false, position: '1', name: 'pin' };
+let updateReleaseUrl = '';
+
+const UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/su6/gateway-autofill-extension/main/version.json';
 
 function serviceType() { return serviceTypeInput.value; }
 function show(message, error = false) { status.textContent = message; status.className = error ? 'error' : ''; }
@@ -48,6 +55,33 @@ function showToast(message) {
   toast.classList.add('visible');
   clearTimeout(showToast.timer);
   showToast.timer = setTimeout(() => toast.classList.remove('visible'), 2000);
+}
+function compareVersions(left, right) {
+  const parse = value => String(value || '').split('.').map(part => Number(part) || 0);
+  const [leftParts, rightParts] = [parse(left), parse(right)];
+  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
+    const difference = (leftParts[index] || 0) - (rightParts[index] || 0);
+    if (difference) return difference;
+  }
+  return 0;
+}
+function isTrustedReleaseUrl(value) {
+  return /^https:\/\/github\.com\/su6\/gateway-autofill-extension\/releases\/tag\/v\d+(?:\.\d+){2}$/.test(String(value || ''));
+}
+async function checkForUpdate() {
+  try {
+    const response = await fetch(UPDATE_MANIFEST_URL, { cache: 'no-store' });
+    if (!response.ok) return;
+    const latest = await response.json();
+    const installedVersion = chrome.runtime.getManifest().version;
+    if (!latest?.version || !isTrustedReleaseUrl(latest.releaseUrl) || compareVersions(latest.version, installedVersion) <= 0) return;
+    updateReleaseUrl = latest.releaseUrl;
+    updateMessage.textContent = `v${latest.version} 可更新 · 查看更新`;
+    updateNotice.hidden = false;
+    app.classList.add('has-update');
+  } catch (_) {
+    // 网络不可用或更新信息暂未发布时不打断插件使用。
+  }
 }
 function renderTemplateChoice() {
   document.querySelectorAll('.template-tab').forEach(tab => {
@@ -267,7 +301,9 @@ async function saveConfig() {
     gatewayAutofillConfigByEnvironment: configurations,
     gatewayAutofillEnvironmentSchema: '0.3.18'
   });
-  renderServiceMode(); show('默认配置已保存到此浏览器。');
+  renderServiceMode();
+  show('默认配置已保存到此浏览器。');
+  showToast('默认配置已保存。');
 }
 
 async function initialise() {
@@ -309,6 +345,7 @@ async function initialise() {
   renderServiceMode();
   await loadGatewayDropdowns();
   miniTaskDomain.textContent = optionText(serviceDomainInput) || '网关服务域';
+  checkForUpdate();
 }
 
 template.addEventListener('input', renderPreview);
@@ -331,6 +368,13 @@ pinRule.addEventListener('change', updateParameterRule);
 pinRulePosition.addEventListener('change', updateParameterRule);
 pinRuleName.addEventListener('change', updateParameterRule);
 document.querySelector('#saveSettings').addEventListener('click', saveConfig);
+openUpdate.addEventListener('click', () => {
+  if (updateReleaseUrl) chrome.tabs.create({ url: updateReleaseUrl });
+});
+closeUpdate.addEventListener('click', () => {
+  updateNotice.hidden = true;
+  app.classList.remove('has-update');
+});
 document.querySelectorAll('.template-tab').forEach(tab => tab.addEventListener('click', () => {
   selectedTemplate = tab.dataset.template;
   renderTemplateChoice();

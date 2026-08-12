@@ -11,8 +11,13 @@
     <main id="app">
       <header class="masthead">
         <div class="standard-brand"><p class="eyebrow">GATEWAY OPERATIONS / 01</p><h1>网关 API 自动填写</h1></div>
-        <div class="mini-brand"><span class="mini-mark">↗</span><div><h1>网关 API 自动填写</h1><p>v0.3.22 · @bianlei5</p></div></div>
-        <div class="masthead-meta"><span class="version">v0.3.22</span><p class="author">@bianlei5</p><p id="miniEnvironment" class="mini-environment"></p></div>
+        <div class="mini-brand"><span class="mini-mark">↗</span><div><h1>网关 API 自动填写</h1><p>v0.3.24 · @bianlei5</p></div></div>
+        <div class="masthead-meta"><span class="version">v0.3.24</span><p class="author">@bianlei5</p><p id="miniEnvironment" class="mini-environment"></p></div>
+        <aside id="updateNotice" hidden aria-live="polite">
+          <span class="update-icon" aria-hidden="true">↑</span>
+          <button id="openUpdate" type="button"><strong id="updateMessage"></strong></button>
+          <button id="closeUpdate" type="button" aria-label="关闭更新提示">×</button>
+        </aside>
       </header>
       <div class="runtime-bar"><p id="environment" class="environment"></p><span class="page-ready">已读取页面配置</span></div>
       <div class="mode-dock" role="group" aria-label="插件显示模式"><button type="button" data-display-mode="standard" aria-pressed="true">标准</button><button type="button" data-display-mode="mini" aria-pressed="false">Mini</button></div>

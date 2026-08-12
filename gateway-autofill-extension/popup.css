@@ -5,9 +5,16 @@ body { width: 408px; margin: 0; background: #e7eeee; }
 main { position: relative; min-height: 100%; overflow: hidden; background: #f7fbfa; }
 #toast { position: fixed; z-index: 10; top: 13px; left: 50%; transform: translate(-50%, -10px); padding: 8px 14px; border: 1px solid rgba(255,255,255,.34); border-radius: 7px; background: #087a72; color: #fff; box-shadow: 0 9px 18px rgba(10,72,70,.2); font-size: 12px; opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s; }
 #toast.visible { opacity: 1; transform: translate(-50%, 0); }
+#updateNotice { position: absolute; z-index: 3; bottom: 9px; left: 22px; display: grid; grid-template-columns: 18px minmax(0, 1fr) 18px; width: 235px; min-height: 28px; align-items: center; gap: 6px; padding: 3px 6px; border: 1px solid #efca63; border-radius: 7px; background: linear-gradient(90deg, #fff0b8, #fff8d7); box-shadow: 0 6px 13px rgba(0,48,45,.16); color: #6c5007; }
+.update-icon { display: grid; width: 18px; height: 18px; place-items: center; border-radius: 4px; background: #b67600; color: #fff; font-size: 11px; font-weight: 800; }
+#openUpdate { min-width: 0; padding: 0; overflow: hidden; border-radius: 3px; background: transparent; color: #664900; text-align: left; }
+#openUpdate strong { display: block; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+#closeUpdate { width: 18px; height: 18px; padding: 0; border-radius: 4px; background: transparent; color: #755d18; font-size: 15px; line-height: 1; }
+#openUpdate:focus-visible, #closeUpdate:focus-visible { outline: 2px solid rgba(111,79,0,.32); outline-offset: 1px; }
 
 /* 标准模式：按完整操作台布局展示。 */
-.masthead { display: flex; min-height: 100px; align-items: flex-start; justify-content: space-between; padding: 20px 22px 16px; color: #fff; background: linear-gradient(122deg, #005e59, #00877e 76%, #0e9287); }
+.masthead { position: relative; display: flex; min-height: 100px; align-items: flex-start; justify-content: space-between; padding: 20px 22px 16px; color: #fff; background: linear-gradient(122deg, #005e59, #00877e 76%, #0e9287); }
+main.has-update .masthead { min-height: 132px; padding-bottom: 43px; }
 .eyebrow { margin: 0 0 7px; color: #b8e1dd; font-size: 10px; font-weight: 800; letter-spacing: .115em; }
 h1 { margin: 0; color: #fff; font-size: 23px; font-weight: 720; letter-spacing: -.025em; }
 .mini-brand, .mini-environment, .mini-task, .mini-intro, .mini-editor-label, .mini-helper, .mini-settings-trigger, #miniCopyTemplate { display: none; }
@@ -75,6 +82,8 @@ button:disabled { opacity: .6; cursor: wait; }
 /* Mini 模式：独立单任务界面，配置在底部按需展开。 */
 main.is-mini { display: flex; flex-direction: column; min-height: 100%; padding: 14px; background: radial-gradient(circle at 0 0, #d6f1eb 0, #f9fbfb 45%, #edf4f3 100%); }
 main.is-mini .masthead { order: 1; min-height: 60px; align-items: center; padding: 10px 14px; border-radius: 12px 12px 0 0; background: #11242d; }
+main.is-mini.has-update .masthead { min-height: 94px; align-items: flex-start; padding-bottom: 38px; }
+main.is-mini #updateNotice { bottom: 7px; left: 14px; width: 220px; }
 main.is-mini .standard-brand, main.is-mini .version, main.is-mini .author, main.is-mini .runtime-bar { display: none; }
 main.is-mini .mini-brand { display: flex; align-items: center; gap: 9px; }
 main.is-mini .mini-mark { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 8px; background: #05a991; color: #102631; font-size: 17px; font-weight: 900; }
