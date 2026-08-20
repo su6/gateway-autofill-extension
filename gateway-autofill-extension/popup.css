@@ -17,7 +17,7 @@ main { position: relative; min-height: 100%; overflow: hidden; background: #f7fb
 main.has-update .masthead { min-height: 132px; padding-bottom: 43px; }
 .eyebrow { margin: 0 0 7px; color: #b8e1dd; font-size: 10px; font-weight: 800; letter-spacing: .115em; }
 h1 { margin: 0; color: #fff; font-size: 23px; font-weight: 720; letter-spacing: -.025em; }
-.mini-brand, .mini-environment, .mini-task, .mini-intro, .mini-editor-label, .mini-helper, .mini-settings-trigger, #miniCopyTemplate { display: none; }
+.mini-brand, .mini-environment, .mini-task, .mini-intro, .mini-editor-label, .mini-helper, #miniCopyTemplate { display: none; }
 .masthead-meta { display: grid; justify-items: end; }
 .standard-meta { display: flex; align-items: center; gap: 5px; margin: 3px 0 0; color: #bfe5e0; font-size: 10px; line-height: 1; }
 .version { color: #effffb; font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -81,7 +81,7 @@ textarea { width: 100%; height: 126px; margin-top: 7px; padding: 8px 9px; border
 button:disabled { opacity: .6; cursor: wait; }
 #status { min-height: 18px; margin: 9px 13px 13px; color: #58747b; font-size: 12px; }
 
-/* Mini 模式：独立单任务界面，配置在底部按需展开。 */
+/* Mini 模式：独立单任务界面，默认配置前置，确认后再粘贴接口信息。 */
 main.is-mini { display: flex; flex-direction: column; min-height: 100%; padding: 14px; background: radial-gradient(circle at 0 0, #d6f1eb 0, #f9fbfb 45%, #edf4f3 100%); }
 main.is-mini .masthead { order: 1; min-height: 60px; align-items: center; padding: 10px 14px; border-radius: 12px 12px 0 0; background: #11242d; }
 main.is-mini.has-update .masthead { min-height: 94px; align-items: flex-start; padding-bottom: 38px; }
@@ -94,12 +94,23 @@ main.is-mini .mini-brand p { margin: 2px 0 0; color: #9bb7bd; font-size: 10px; }
 main.is-mini .masthead-meta { gap: 0; }
 main.is-mini .mini-environment { display: block; margin: 0; color: #c4f4e8; font-size: 11px; font-weight: 700; }
 main.is-mini .mini-environment::before { margin-right: 5px; color: #b7f5e9; content: "●"; }
-main.is-mini .interface-panel { order: 2; position: relative; margin: 0; overflow: visible; border: 0; border-radius: 0 0 12px 12px; box-shadow: 0 16px 30px rgba(29,57,58,.13); }
+main.is-mini .interface-panel { order: 3; position: relative; margin: 0; overflow: visible; border: 0; border-radius: 0 0 12px 12px; box-shadow: 0 16px 30px rgba(29,57,58,.13); }
 main.is-mini .interface-panel .panel-title { display: none; }
-main.is-mini .mini-task { display: flex; align-items: center; gap: 9px; padding: 15px 94px 0 14px; }
+main.is-mini .config-panel { display: block; order: 2; margin: 0; overflow: hidden; border: 0; border-radius: 0; box-shadow: none; }
+main.is-mini .mini-task { display: flex; align-items: center; gap: 9px; padding: 14px 94px 10px 14px; background: #fff; }
 main.is-mini .mini-task span { padding: 5px 8px; border-radius: 99px; color: #087b72; background: #e4f8f3; font-size: 10px; font-weight: 800; }
 main.is-mini .mini-task p { margin: 0; color: #57747d; font-size: 11px; }
 main.is-mini .mini-task b { color: #53707a; font-weight: 700; }
+main.is-mini .config-collapse { min-height: 44px; padding: 0 14px; border-top: 1px solid #dce8e6; border-bottom: 1px solid #dce8e6; }
+main.is-mini .config-collapse strong { font-size: 14px; }
+main.is-mini .config-collapse span { font-size: 11px; }
+main.is-mini .config-panel.is-collapsed .config-collapse { border-bottom: 1px solid #dce8e6; }
+main.is-mini .config-panel .hint { margin: 8px 14px 4px; font-size: 10px; }
+main.is-mini .config-form { padding: 2px 14px 7px; }
+main.is-mini .config-form label { grid-template-columns: 69px minmax(0, 1fr); min-height: 34px; font-size: 11px; }
+main.is-mini .config-form select, main.is-mini .config-form input[type=text] { min-height: 28px; font-size: 11px; }
+main.is-mini .config-actions { padding: 0 14px 11px; }
+main.is-mini .config-actions .secondary { padding: 8px; font-size: 11px; }
 main.is-mini .mini-intro { display: block; padding: 15px 14px 0; }
 main.is-mini .mini-intro h2 { margin: 0; color: #172d37; font-size: 20px; line-height: 1.25; letter-spacing: -.04em; }
 main.is-mini .mini-intro p { margin: 7px 0 0; color: #718990; font-size: 11px; line-height: 1.55; }
@@ -123,18 +134,6 @@ main.is-mini #fill::before { display: none; }
 main.is-mini .mini-helper { display: block; margin: 12px 14px 16px; color: #6d858b; font-size: 11px; line-height: 1.5; }
 main.is-mini .mini-helper b { margin-right: 5px; color: #dc9826; }
 main.is-mini #status { margin: 0 14px 10px; }
-main.is-mini .mini-settings-trigger { display: grid; grid-template-columns: 74px 1fr auto; width: 100%; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid #d4e0de; border-radius: 0 0 12px 12px; background: #fff; color: #5a747d; text-align: left; font-size: 11px; }
-main.is-mini .mini-settings-trigger span { color: #536f77; font-weight: 800; }
-main.is-mini .mini-settings-trigger b { overflow: hidden; color: #617a82; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
-main.is-mini .mini-settings-trigger i { color: #008b7f; font-size: 15px; font-style: normal; }
-main.is-mini .config-panel { position: relative; display: none; }
-main.is-mini.mini-settings-open .config-panel { display: block; order: 3; margin: 0; border: 0; border-top: 1px solid #d1dfdd; border-radius: 0; box-shadow: 0 16px 30px rgba(29,57,58,.13); }
-main.is-mini.mini-settings-open .config-panel .config-collapse { display: none; }
-main.is-mini.mini-settings-open .config-panel .hint { margin-top: 10px; }
-main.is-mini.mini-settings-open .config-actions { padding-bottom: 11px; }
-main.is-mini.mini-settings-open .config-panel.is-collapsed .hint,
-main.is-mini.mini-settings-open .config-panel.is-collapsed .config-form { display: block; }
-main.is-mini.mini-settings-open .config-panel.is-collapsed .config-actions { display: flex; }
 main.is-mini .mode-dock { top: 76px; right: 22px; box-shadow: 0 2px 7px rgba(18,48,52,.08); }
 main.is-mini .mode-dock button { min-width: 34px; padding: 4px 5px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0s !important; } }

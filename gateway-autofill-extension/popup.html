@@ -11,8 +11,8 @@
     <main id="app">
       <header class="masthead">
         <div class="standard-brand"><p class="eyebrow">GATEWAY OPERATIONS / 01</p><h1>网关 API 自动填写</h1></div>
-        <div class="mini-brand"><span class="mini-mark">↗</span><div><h1>网关 API 自动填写</h1><p>v0.3.27 · @bianlei5</p></div></div>
-        <div class="masthead-meta"><p class="standard-meta"><span class="version">v0.3.27</span><span aria-hidden="true">·</span><span class="author">@bianlei5</span></p><p id="miniEnvironment" class="mini-environment"></p></div>
+        <div class="mini-brand"><span class="mini-mark">↗</span><div><h1>网关 API 自动填写</h1><p>v0.3.28 · @bianlei5</p></div></div>
+        <div class="masthead-meta"><p class="standard-meta"><span class="version">v0.3.28</span><span aria-hidden="true">·</span><span class="author">@bianlei5</span></p><p id="miniEnvironment" class="mini-environment"></p></div>
         <aside id="updateNotice" hidden aria-live="polite">
           <span class="update-icon" aria-hidden="true">↑</span>
           <button id="openUpdate" type="button"><strong id="updateMessage"></strong></button>
@@ -23,6 +23,7 @@
       <div class="mode-dock" role="group" aria-label="插件显示模式"><button type="button" data-display-mode="standard" aria-pressed="true">标准</button><button type="button" data-display-mode="mini" aria-pressed="false">Mini</button></div>
 
       <section id="miniSettingsPanel" class="panel config-panel" aria-labelledby="configTitle">
+        <div class="mini-task"><span>当前任务</span><p>新建 API / <b id="miniTaskDomain">网关服务域</b></p></div>
         <button id="configCollapse" class="config-collapse" type="button" aria-expanded="true"><strong id="configTitle">默认配置</strong><span>本环境已保存</span><i aria-hidden="true">⌃</i></button>
         <p class="hint">首次选择后自动记住；网关表单重置后再次打开会直接带入。</p>
         <div class="config-form">
@@ -36,7 +37,6 @@
 
       <section class="panel interface-panel" aria-labelledby="interfaceTitle">
         <div class="panel-title"><h2 id="interfaceTitle">接口解析</h2><span>三步完成</span></div>
-        <div class="mini-task"><span>当前任务</span><p>新建 API / <b id="miniTaskDomain">网关服务域</b></p></div>
         <div class="mini-intro"><h2>粘贴接口信息，剩下交给插件。</h2><p>默认配置已自动应用。只要确认文本无误，直接解析并填写。</p></div>
         <ol class="steps">
           <li class="step template-step">
@@ -55,7 +55,6 @@
         <div class="mini-actions"><button id="miniCopyTemplate" type="button">复制 JSF 模板</button><button id="fill" type="button">解析并填写网关表单</button></div>
         <p class="mini-helper"><b>●</b>第一次用？先复制模板，按字段改好后再粘贴。支持 JSF / HTTP 自动识别。</p>
         <p id="status" role="status"></p>
-        <button id="miniSettingsTrigger" class="mini-settings-trigger" type="button" aria-controls="miniSettingsPanel" aria-expanded="false"><span>默认配置</span><b>业务分组、服务域、服务类型</b><i aria-hidden="true">⌄</i></button>
       </section>
     </main>
     <script src="popup.js"></script>

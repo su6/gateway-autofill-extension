@@ -1,5 +1,5 @@
 {
-  "version": "0.3.27",
-  "notes": "修复是否订单相关默认否未自动选择",
-  "releaseUrl": "https://github.com/su6/gateway-autofill-extension/releases/tag/v0.3.27"
+  "version": "0.3.28",
+  "notes": "Mini 模式默认配置前置展示，确认配置后再填写接口信息",
+  "releaseUrl": "https://github.com/su6/gateway-autofill-extension/releases/tag/v0.3.28"
 }

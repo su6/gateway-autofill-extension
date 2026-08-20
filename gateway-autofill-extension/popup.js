@@ -22,7 +22,6 @@ const businessGroupInput = document.querySelector('#businessGroup');
 const serviceDomainInput = document.querySelector('#serviceDomain');
 const serviceTypeInput = document.querySelector('#serviceType');
 const app = document.querySelector('#app');
-const miniSettingsTrigger = document.querySelector('#miniSettingsTrigger');
 const miniEnvironment = document.querySelector('#miniEnvironment');
 const miniTaskDomain = document.querySelector('#miniTaskDomain');
 const configPanel = document.querySelector('.config-panel');
@@ -95,19 +94,12 @@ function renderTemplateChoice() {
 function renderDisplayMode() {
   const mini = displayMode === 'mini';
   app.classList.toggle('is-mini', mini);
-  if (!mini) app.classList.remove('mini-settings-open');
-  renderMiniSettings();
   displayModeButtons.forEach(item => {
     const selected = item.dataset.displayMode === displayMode;
     item.classList.toggle('active', selected);
     item.setAttribute('aria-pressed', String(selected));
   });
   renderTemplateChoice();
-}
-function renderMiniSettings() {
-  const expanded = app.classList.contains('mini-settings-open');
-  miniSettingsTrigger.setAttribute('aria-expanded', String(expanded));
-  miniSettingsTrigger.querySelector('i').textContent = expanded ? '⌃' : '⌄';
 }
 function renderConfigCollapse() {
   configPanel.classList.toggle('is-collapsed', configCollapsed);
@@ -388,10 +380,6 @@ async function copyCurrentTemplate() {
 copyTemplateButton.addEventListener('click', copyCurrentTemplate);
 miniCopyTemplateButton.addEventListener('click', copyCurrentTemplate);
 displayModeButtons.forEach(item => item.addEventListener('click', () => changeDisplayMode(item.dataset.displayMode)));
-miniSettingsTrigger.addEventListener('click', () => {
-  app.classList.toggle('mini-settings-open');
-  renderMiniSettings();
-});
 configCollapse.addEventListener('click', toggleConfigCollapse);
 
 button.addEventListener('click', async () => {
