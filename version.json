@@ -1,5 +1,5 @@
 {
-  "version": "0.3.26",
-  "notes": "统一标准与 Mini 模式的版本和作者信息布局",
-  "releaseUrl": "https://github.com/su6/gateway-autofill-extension/releases/tag/v0.3.26"
+  "version": "0.3.27",
+  "notes": "修复是否订单相关默认否未自动选择",
+  "releaseUrl": "https://github.com/su6/gateway-autofill-extension/releases/tag/v0.3.27"
 }

@@ -99,7 +99,7 @@
     const wantedGroup = normalise(groupLabel);
     const wantedOption = normalise(optionText);
     const headings = [...document.querySelectorAll('#domainApiEditModal label, #domainApiEditModal span, #domainApiEditModal div')]
-      .filter(element => visible(element) && normalise(element.textContent) === wantedGroup)
+      .filter(element => visible(element) && normalise(element.textContent).replace(/^\*+/, '') === wantedGroup)
       .sort((a, b) => a.querySelectorAll('*').length - b.querySelectorAll('*').length);
     for (const heading of headings) {
       for (let root = heading; root; root = root.parentElement) {
@@ -118,6 +118,18 @@
       }
     }
     return false;
+  }
+
+  function clickNamedOption(groupName, optionText) {
+    const wantedOption = normalise(optionText);
+    const input = [...document.querySelectorAll('input[type=radio], input[type=checkbox]')].find(candidate => {
+      if (!(candidate instanceof HTMLInputElement) || candidate.name !== groupName) return false;
+      const option = candidate.closest('label, .tag-item, [role=radio]') || candidate.parentElement;
+      return visible(option) && normalise(option.textContent) === wantedOption;
+    });
+    if (!(input instanceof HTMLInputElement)) return false;
+    if (!input.checked) input.click();
+    return input.checked;
   }
 
   function clickOption(groupLabel, optionText) {
@@ -415,13 +427,9 @@
         if (await selectSensitiveTag(tag)) filled.push('敏感标签'); else missing.push('敏感标签');
         [['接口类型', config.apiType], ['流量类型', config.flowType], ['是否支持mock', '否'], ['用户类型', '京东员工(ERP登录)'], ['接口等级', '1'], ['允许匿名访问', '否']]
           .forEach(([group, choice]) => clickOption(group, choice));
-        // “是否订单相关”复用了其他标签 ID，不能按页面文字通用匹配。
-        // 线上网关中 C00006 的值 18 是“否”。
-        const orderRelatedNo = document.querySelector('input[name="C00006"][value="18"]');
-        if (orderRelatedNo instanceof HTMLInputElement) {
-          if (!orderRelatedNo.checked) orderRelatedNo.click();
-          if (orderRelatedNo.checked) filled.push('是否订单相关'); else missing.push('是否订单相关');
-        } else if (clickFormGroupOption('是否订单相关', '否')) filled.push('是否订单相关'); else missing.push('是否订单相关');
+        // “是否订单相关”的 value 会随网关标签配置变化，且选项 ID 与其他字段重复。
+        // 使用稳定的字段组 name + 可见选项文字定位，同时保留按字段标题查找的兼容逻辑。
+        if (clickNamedOption('C00006', '否') || clickFormGroupOption('是否订单相关', '否')) filled.push('是否订单相关'); else missing.push('是否订单相关');
         if (setCheckbox('允许匿名访问', true)) filled.push('允许匿名访问'); else missing.push('允许匿名访问');
         if (message.addPinRule) {
           if (await addPinRule(message.parameterRule)) filled.push('参数替换规则'); else missing.push('参数替换规则');
