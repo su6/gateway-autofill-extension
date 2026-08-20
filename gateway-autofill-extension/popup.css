@@ -17,7 +17,7 @@ main { position: relative; min-height: 100%; overflow: hidden; background: #f7fb
 main.has-update .masthead { min-height: 132px; padding-bottom: 43px; }
 .eyebrow { margin: 0 0 7px; color: #b8e1dd; font-size: 10px; font-weight: 800; letter-spacing: .115em; }
 h1 { margin: 0; color: #fff; font-size: 23px; font-weight: 720; letter-spacing: -.025em; }
-.mini-brand, .mini-environment, .mini-task, .mini-intro, .mini-editor-label, .mini-helper, #miniCopyTemplate { display: none; }
+.mini-brand, .mini-environment, .mini-task, .mini-intro, .mini-template-choice, .mini-editor-label, .mini-helper, #miniCopyTemplate { display: none; }
 .masthead-meta { display: grid; justify-items: end; }
 .standard-meta { display: flex; align-items: center; gap: 5px; margin: 3px 0 0; color: #bfe5e0; font-size: 10px; line-height: 1; }
 .version { color: #effffb; font: 700 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -114,13 +114,15 @@ main.is-mini .config-actions .secondary { padding: 8px; font-size: 11px; }
 main.is-mini .mini-intro { display: block; padding: 15px 14px 0; }
 main.is-mini .mini-intro h2 { margin: 0; color: #172d37; font-size: 20px; line-height: 1.25; letter-spacing: -.04em; }
 main.is-mini .mini-intro p { margin: 7px 0 0; color: #718990; font-size: 11px; line-height: 1.55; }
-main.is-mini .steps { margin: 15px 14px 0; padding: 0; }
+main.is-mini .mini-template-choice { display: flex; align-items: center; gap: 6px; }
+main.is-mini .mini-template-tab { min-height: 30px; border: 1px solid #b8d1ce; border-radius: 7px; background: #fff; color: #547078; font-size: 11px; }
+main.is-mini .mini-template-tab.active { border-color: #008b81; background: #008b81; color: #fff; }
+main.is-mini .steps { margin: 13px 14px 0; padding: 0; }
 main.is-mini .step { display: block; }
 main.is-mini .step-no, main.is-mini .step h3, main.is-mini .step p, main.is-mini .modify-step { display: none; }
 main.is-mini .template-step { display: none; }
 main.is-mini .paste-step { display: block; }
-main.is-mini .mini-editor-label { display: flex; align-items: center; justify-content: space-between; padding: 10px 11px 0; color: #087d74; font-size: 11px; }
-main.is-mini .mini-editor-label span { padding: 2px 6px; border: 1px solid #bfded9; border-radius: 4px; color: #6b898a; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+main.is-mini .mini-editor-label { display: flex; align-items: center; justify-content: space-between; padding: 0 0 6px; color: #087d74; font-size: 11px; }
 main.is-mini textarea { height: 153px; margin-top: 0; padding: 8px 11px 11px; border: 2px solid #04a78e; border-radius: 12px; background: #fff; font-size: 11px; }
 main.is-mini #preview { display: none; }
 main.is-mini .rule { display: flex; margin: 8px 0 0; color: #58747b; font-size: 10px; }

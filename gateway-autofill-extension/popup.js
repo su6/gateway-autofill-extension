@@ -83,10 +83,11 @@ async function checkForUpdate() {
   }
 }
 function renderTemplateChoice() {
-  document.querySelectorAll('.template-tab').forEach(tab => {
+  document.querySelectorAll('.template-tab, .mini-template-tab').forEach(tab => {
     const active = tab.dataset.template === selectedTemplate;
     tab.classList.toggle('active', active);
-    tab.setAttribute('aria-selected', String(active));
+    if (tab.hasAttribute('aria-pressed')) tab.setAttribute('aria-pressed', String(active));
+    else tab.setAttribute('aria-selected', String(active));
   });
   copyTemplateButton.textContent = `复制 ${selectedTemplate.toUpperCase()} 模板`;
   miniCopyTemplateButton.textContent = `复制 ${selectedTemplate.toUpperCase()} 模板`;
@@ -367,7 +368,7 @@ closeUpdate.addEventListener('click', () => {
   updateNotice.hidden = true;
   app.classList.remove('has-update');
 });
-document.querySelectorAll('.template-tab').forEach(tab => tab.addEventListener('click', () => {
+document.querySelectorAll('.template-tab, .mini-template-tab').forEach(tab => tab.addEventListener('click', () => {
   selectedTemplate = tab.dataset.template;
   renderTemplateChoice();
   show('已选择参考模板；点击“复制当前模板”后到记事本修改。');
